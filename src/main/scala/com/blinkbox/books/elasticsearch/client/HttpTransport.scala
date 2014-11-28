@@ -1,5 +1,6 @@
 package com.blinkbox.books.elasticsearch.client
 
+import org.elasticsearch.action._
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthAction
 import org.elasticsearch.action.admin.cluster.node.hotthreads.NodesHotThreadsAction
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoAction
@@ -34,7 +35,7 @@ import org.elasticsearch.action.admin.indices.exists.types.TypesExistsAction
 import org.elasticsearch.action.admin.indices.flush.FlushAction
 import org.elasticsearch.action.admin.indices.get.GetIndexAction
 import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingAction
-import org.elasticsearch.action.admin.indices.mapping.get.{GetMappingsAction, GetFieldMappingsAction}
+import org.elasticsearch.action.admin.indices.mapping.get.{GetFieldMappingsAction, GetMappingsAction}
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingAction
 import org.elasticsearch.action.admin.indices.open.OpenIndexAction
 import org.elasticsearch.action.admin.indices.optimize.OptimizeAction
@@ -58,24 +59,29 @@ import org.elasticsearch.action.delete.DeleteAction
 import org.elasticsearch.action.deletebyquery.DeleteByQueryAction
 import org.elasticsearch.action.exists.ExistsAction
 import org.elasticsearch.action.explain.ExplainAction
-import org.elasticsearch.action.get.{GetRequest, MultiGetAction, GetAction}
+import org.elasticsearch.action.get.{GetAction, MultiGetAction}
 import org.elasticsearch.action.index.IndexAction
 import org.elasticsearch.action.indexedscripts.get.GetIndexedScriptAction
 import org.elasticsearch.action.indexedscripts.put.PutIndexedScriptAction
 import org.elasticsearch.action.mlt.MoreLikeThisAction
-import org.elasticsearch.action.percolate.{PercolateAction, MultiPercolateAction}
+import org.elasticsearch.action.percolate.{MultiPercolateAction, PercolateAction}
 import org.elasticsearch.action.search._
 import org.elasticsearch.action.suggest.SuggestAction
-import org.elasticsearch.action.termvector.{TermVectorAction, MultiTermVectorsAction}
+import org.elasticsearch.action.termvector.{MultiTermVectorsAction, TermVectorAction}
 import org.elasticsearch.action.update.UpdateAction
-import org.elasticsearch.action.{ActionResponse, ActionRequest, ActionFuture, Action}
-import org.elasticsearch.client.{Client => ElasticClient}
+import org.elasticsearch.client.ElasticsearchClient
+
 import scala.language.existentials
 
-trait HttpTransport {
+class HttpTransport {
 
-  def doAction[Response <: ActionResponse, Client <: ElasticClient](
-      action: Action[T, Response, _, Client] forSome { type T <: ActionRequest[T] }, request: ActionRequest[_]): ActionFuture[Response] = {
+  type Req = T forSome { type T <: ActionRequest[T] }
+  type Cl = T forSome { type T <: ElasticsearchClient[T] }
+
+  type Act[Request <: Req, Response <: ActionResponse, Client <: Cl] = Action[Request, Response, _, Client]
+
+  def doAction[Request <: Req, Response <: ActionResponse, Client <: Cl](
+      action: Act[Request, Response, Client], request: Request): ActionFuture[Response] = {
 
     action.name match {
       // Indices actions

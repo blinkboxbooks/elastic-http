@@ -2,6 +2,9 @@ package com.blinkbox.books.elasticsearch.client;
 
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.*;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetRequestBuilder;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.ClusterAdminClient;
@@ -15,6 +18,7 @@ import org.elasticsearch.threadpool.ThreadPool;
 public class HttpClient extends AbstractClient {
 
     private Settings settings;
+    private HttpTransport transport = new HttpTransport();
 
     public HttpClient(Settings settings) {
         this.settings = settings;
@@ -24,6 +28,13 @@ public class HttpClient extends AbstractClient {
 
         @Override
         public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder, ClusterAdminClient>> ActionFuture<Response> execute(Action<Request, Response, RequestBuilder, ClusterAdminClient> action, Request request) {
+
+
+            // This is just an example to see that types play well from java to scala
+            Action<GetRequest, GetResponse, GetRequestBuilder, Client> act = null;
+            GetRequest req = null;
+            final ActionFuture<GetResponse> doAction = transport.doAction(act, req);
+
             return null;
         }
 
