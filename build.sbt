@@ -8,8 +8,11 @@ lazy val buildSettings = Seq(
   scalaVersion := "2.11.4",
   scalacOptions := Seq("-unchecked", "-deprecation", "-feature", "-encoding", "utf8", "-target:jvm-1.7"),
   libraryDependencies ++= Seq(
-    "org.elasticsearch"   %   "elasticsearch"     % "1.4.1",
-    "com.blinkbox.books"  %%  "common-scala-test" % "0.3.0"   % Test
+    "com.sksamuel.elastic4s" %% "elastic4s"       % "1.4.0",
+    "com.typesafe.akka"   %%  "akka-actor"        % "2.3.7",
+    "io.spray"            %%  "spray-client"      % "1.3.2",
+    "org.json4s"          %%  "json4s-jackson"    % "3.2.11",
+    "com.blinkbox.books"  %%  "common-scala-test" % "0.3.0" % Test
   )
 )
 

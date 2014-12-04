@@ -1,5 +1,6 @@
-package com.blinkbox.books.elasticsearch.client
+package com.blinkbox.books.elasticsearch.clientiml
 
+import akka.actor.ActorRefFactory
 import org.elasticsearch.action._
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthAction
 import org.elasticsearch.action.admin.cluster.node.hotthreads.NodesHotThreadsAction
@@ -59,7 +60,7 @@ import org.elasticsearch.action.delete.DeleteAction
 import org.elasticsearch.action.deletebyquery.DeleteByQueryAction
 import org.elasticsearch.action.exists.ExistsAction
 import org.elasticsearch.action.explain.ExplainAction
-import org.elasticsearch.action.get.{GetAction, MultiGetAction}
+import org.elasticsearch.action.get.{GetAction, GetRequest, GetResponse, MultiGetAction}
 import org.elasticsearch.action.index.IndexAction
 import org.elasticsearch.action.indexedscripts.get.GetIndexedScriptAction
 import org.elasticsearch.action.indexedscripts.put.PutIndexedScriptAction
@@ -67,18 +68,57 @@ import org.elasticsearch.action.mlt.MoreLikeThisAction
 import org.elasticsearch.action.percolate.{MultiPercolateAction, PercolateAction}
 import org.elasticsearch.action.search._
 import org.elasticsearch.action.suggest.SuggestAction
+import org.elasticsearch.action.support.PlainActionFuture
 import org.elasticsearch.action.termvector.{MultiTermVectorsAction, TermVectorAction}
 import org.elasticsearch.action.update.UpdateAction
 import org.elasticsearch.client.ElasticsearchClient
+import org.elasticsearch.common.bytes.BytesArray
+import org.elasticsearch.common.io.stream.BytesStreamInput
+import org.elasticsearch.common.xcontent.json.JsonXContent
+import spray.client.pipelining._
+import spray.http.HttpCredentials
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.existentials
+import scala.util.{Failure, Success}
 
-class HttpTransport {
+// TODO: Remove this in the next commit - attempted implementation of an HTTP client compatible with the ES Java API
+class HttpTransport(
+    baseUrl: String,
+    credentials: Option[HttpCredentials] = None)(
+  implicit
+    ec: ExecutionContext,
+    arf: ActorRefFactory) {
+
+  class ActionFutureAdapter[T](f: Future[T]) extends PlainActionFuture[T] {
+    f.onComplete {
+      case Success(value) => set(value)
+      case Failure(error) => setException(error)
+    }
+  }
 
   type Req = T forSome { type T <: ActionRequest[T] }
   type Cl = T forSome { type T <: ElasticsearchClient[T] }
 
-  type Act[Request <: Req, Response <: ActionResponse, Client <: Cl] = Action[Request, Response, _, Client]
+  type Act[Request <: Req, Response <: ActionResponse, Client <: Cl] =
+    Action[Request, Response, _, Client]
+
+  val pipeline = sendReceive
+
+  def getAction(action: GetAction, request: GetRequest): ActionFuture[GetResponse] = {
+    val req = Get(s"${baseUrl}/${request.index}/${request.`type`}/${request.id}") ~> pipeline
+
+
+    new ActionFutureAdapter(req.map { resp =>
+      val bytes = resp.entity.data.toByteArray
+      val bytesRef = new BytesArray(bytes)
+      JsonXContent.jsonXContent.createParser(bytes)
+
+      GetResponse.readGetResponse(
+        new BytesStreamInput(bytesRef)
+      )
+    })
+  }
 
   def doAction[Request <: Req, Response <: ActionResponse, Client <: Cl](
       action: Act[Request, Response, Client], request: Request): ActionFuture[Response] = {
@@ -148,7 +188,10 @@ class HttpTransport {
       case DeleteByQueryAction.NAME => ???        // Maybe
       case ExistsAction.NAME => ???
       case ExplainAction.NAME => ???
-      case GetAction.NAME =>  ???                 // Needed
+      case GetAction.NAME =>                      // Needed
+        getAction(
+          action.asInstanceOf[GetAction],
+          request.asInstanceOf[GetRequest]).asInstanceOf[ActionFuture[Response]]
       case GetIndexedScriptAction.NAME => ???
       case GetSnapshotsAction.NAME => ???
       case IndexAction.NAME => ???                // Needed

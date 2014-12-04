@@ -15,13 +15,17 @@ import org.elasticsearch.client.support.AbstractIndicesAdminClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.threadpool.ThreadPool;
 
+import com.blinkbox.books.elasticsearch.clientiml.HttpTransport;
+
+// TODO: Remove this in the next commit - attempted implementation of ES Java API Client
 public class HttpClient extends AbstractClient {
 
     private Settings settings;
-    private HttpTransport transport = new HttpTransport();
+    private HttpTransport transport;
 
-    public HttpClient(Settings settings) {
+    public HttpClient(Settings settings, HttpTransport transport) {
         this.settings = settings;
+        this.transport = transport;
     }
 
     class HttpClusterAdminClient extends AbstractClusterAdminClient {
