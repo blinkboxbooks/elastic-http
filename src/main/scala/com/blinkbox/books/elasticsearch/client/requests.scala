@@ -1,7 +1,7 @@
 package com.blinkbox.books.elasticsearch.client
 
 import com.sksamuel.elastic4s.{ IndexDefinition, GetDefinition }
-import com.sksamuel.elastic4s.ElasticDsl.SearchDefinition
+import com.sksamuel.elastic4s.ElasticDsl.{CreateIndexDefinition, SearchDefinition}
 import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.search.SearchRequest
@@ -127,8 +127,26 @@ trait TypedSearchSupport {
   implicit def typedSearchElasticRequest[T: FromResponseUnmarshaller] = new TypedSearchElasticRequest[T]
 }
 
+trait CreateIndexSupport {
+  implicit object CreateIndexElasticRequest extends ElasticRequest[CreateIndexDefinition, AcknowledgedResponse] {
+    override def request(req: CreateIndexDefinition): HttpRequest = {
+      val builtRequest = req.build
+      Post(s"/${builtRequest.indices.mkString(",")}", req._source.string())
+    }
+  }
+}
+
+trait StatusSupport {
+  case object StatusRequest
+
+  implicit object StatusElasticRequest extends ElasticRequest[StatusRequest.type, StatusResponse] {
+    override def request(req: StatusRequest.type): HttpRequest = Get("/")
+  }
+}
+
 object SprayElasticClientRequests
   extends IndexSupport
   with SearchSupport
   with GetSupport
   with TypedGetSupport
+  with StatusSupport
