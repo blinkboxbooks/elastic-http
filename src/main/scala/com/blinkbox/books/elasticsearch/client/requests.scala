@@ -36,6 +36,10 @@ trait GetSupport {
   implicit object GetElasticRequest extends ElasticRequest[GetDefinition, GetResponse[JValue]] with GetBase {
     override def request(req: GetDefinition): HttpRequest = requestFor(req)
   }
+}
+
+trait TypedGetSupport {
+  this: GetSupport =>
 
   case class TypedGetDefinition[T: FromResponseUnmarshaller](req: GetDefinition)
 
@@ -51,7 +55,7 @@ trait GetSupport {
 
   import scala.language.implicitConversions
 
-  implicit def toTypedGetElasticRequest[T](implicit marshaller: FromResponseUnmarshaller[T]): TypedGetElasticRequest[T] =
+  implicit def toTypedGetElasticRequest[T: FromResponseUnmarshaller]: TypedGetElasticRequest[T] =
     new TypedGetElasticRequest[T]
 }
 
@@ -85,22 +89,46 @@ trait IndexSupport {
 }
 
 trait SearchSupport {
-  implicit object SearchElasticRequest extends ElasticRequest[SearchDefinition, SearchResponse[JValue]] {
+  sealed trait SearchBase {
     def urlFor(req: SearchRequest) = s"/${req.indices.mkString(",")}/${req.types.mkString(",")}/_search"
 
     def paramsFor(request: SearchRequest): Map[String, String] =
       Option(request.routing).fold(Map.empty[String, String])(r => Map("routing" -> r))
 
-    override def request(req: SearchDefinition): HttpRequest = {
+    def requestFor(req: SearchDefinition): HttpRequest = {
       val builtRequest = req.build
       val uri = Uri(urlFor(builtRequest)).withQuery(paramsFor(builtRequest))
 
       Post(uri, req._builder.toString)
     }
   }
+
+  implicit object SearchElasticRequest extends ElasticRequest[SearchDefinition, SearchResponse[JValue]] with SearchBase {
+    override def request(req: SearchDefinition): HttpRequest = requestFor(req)
+  }
+}
+
+trait TypedSearchSupport {
+  this: SearchSupport =>
+
+  case class TypedSearchDefinition[T: FromResponseUnmarshaller](req: SearchDefinition)
+
+  implicit class SearchDefinitionOps(val req: SearchDefinition) {
+    def sourceIs[T: FromResponseUnmarshaller] = TypedSearchDefinition[T](req)
+  }
+
+  class TypedSearchElasticRequest[T: FromResponseUnmarshaller]
+    extends ElasticRequest[SearchDefinition, SearchResponse[T]]
+    with SearchBase {
+
+    override def request(req: SearchDefinition): HttpRequest = requestFor(req.req)
+  }
+
+  implicit def typedSearchElasticRequest[T: FromResponseUnmarshaller] = new TypedSearchElasticRequest[T]
 }
 
 object SprayElasticClientRequests
   extends IndexSupport
   with SearchSupport
   with GetSupport
+  with TypedGetSupport
