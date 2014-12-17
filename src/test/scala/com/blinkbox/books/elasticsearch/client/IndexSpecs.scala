@@ -10,24 +10,8 @@ import spray.httpx.Json4sJacksonSupport
 
 class IndexSpecs extends FlatSpec with Matchers with ElasticTest {
 
+  import TestFixtures._
   import JsonSupport.json4sUnmarshaller
-
-  case class Distribution(distributed: Boolean, price: Double)
-  case class Book(isbn: String, title: String, author: String, distribution: Distribution)
-
-  val aBook = Book("1234567890123", "A book", "An author", Distribution(true, 1.23))
-
-  val indexDef = create index("catalogue") mappings (
-    "book" as (
-      "isbn" typed StringType,
-      "title" typed StringType,
-      "author" typed StringType,
-      "distribution" inner (
-        "distributed" typed BooleanType,
-        "price" typed DoubleType
-      )
-    ) dynamic false
-  )
 
   "The ES client" should "be able to ping an ES instance" in {
     successfulRequest(StatusRequest) check { resp =>
