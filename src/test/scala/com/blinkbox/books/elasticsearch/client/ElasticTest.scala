@@ -4,12 +4,9 @@ import akka.actor.ActorSystem
 import com.blinkbox.books.test.FailHelper
 import com.sksamuel.elastic4s.ElasticDsl
 import org.json4s.DefaultFormats
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.Suite
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.Millis
-import org.scalatest.time.Span
+import org.scalatest.time.{Millis, Span}
 import spray.httpx.Json4sJacksonSupport
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
