@@ -1,14 +1,19 @@
 package com.blinkbox.books.elasticsearch.client
 
+import com.sksamuel.elastic4s.DeleteIndexDefinition
 import com.sksamuel.elastic4s.{ IndexDefinition, GetDefinition }
 import com.sksamuel.elastic4s.ElasticDsl.{CreateIndexDefinition, SearchDefinition}
 import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.search.SearchRequest
 import org.json4s.JValue
+import spray.http.HttpEntity
+import spray.http.MediaRanges
 import spray.http.{ Uri, HttpRequest }
 import spray.client.pipelining._
+import spray.httpx.PipelineException
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
+import spray.httpx.unmarshalling.Unmarshaller
 
 trait GetSupport {
   sealed trait GetBase {
@@ -136,6 +141,30 @@ trait CreateIndexSupport {
   }
 }
 
+trait DeleteIndexSupport {
+  implicit object DeleteIndexElasticRequest extends ElasticRequest[DeleteIndexDefinition, AcknowledgedResponse] {
+    override def request(req: DeleteIndexDefinition): HttpRequest = {
+      val builtRequest = req.build
+      Delete(s"/${builtRequest.indices.mkString(",")}")
+    }
+  }
+}
+
+trait CheckExistenceSupport {
+  case class CheckExistence(index: String, `type`: Option[String] = None)
+
+  implicit val UnitUnmarshaller = Unmarshaller[Unit](MediaRanges.`*/*`) {
+    case HttpEntity.Empty => ()
+    case _ => throw new PipelineException("Expected no-content in the response")
+  }
+
+  implicit object CheckExistenceElasticRequest extends ElasticRequest[CheckExistence, Unit] {
+    override def request(req: CheckExistence): HttpRequest = {
+      Head(s"/${req.index}${req.`type`.fold("")(t => s"/${t}")}")
+    }
+  }
+}
+
 trait StatusSupport {
   case object StatusRequest
 
@@ -151,3 +180,5 @@ object SprayElasticClientRequests
   with TypedGetSupport
   with StatusSupport
   with CreateIndexSupport
+  with DeleteIndexSupport
+  with CheckExistenceSupport

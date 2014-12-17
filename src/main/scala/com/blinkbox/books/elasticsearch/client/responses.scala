@@ -1,5 +1,7 @@
 package com.blinkbox.books.elasticsearch.client
 
+import spray.http.StatusCode
+
 case class GetResponse[T](
   found: Boolean,
   _index: String,
@@ -35,3 +37,5 @@ case class StatusResponse(
 )
 
 case class AcknowledgedResponse(acknowledged: Boolean)
+
+case class FailedRequest(statusCode: StatusCode) extends Exception(s"Error from ES: $statusCode")

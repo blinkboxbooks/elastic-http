@@ -2,11 +2,16 @@ package com.blinkbox.books.elasticsearch.client
 
 import akka.actor.ActorRefFactory
 import spray.client.pipelining._
+import spray.http.HttpEntity
 import spray.http.HttpHeaders.Host
+import spray.http.MediaRanges
 import spray.http.{HttpCredentials, HttpRequest}
+import spray.httpx.PipelineException
+import spray.httpx.UnsuccessfulResponseException
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
 import scala.concurrent.{ExecutionContext, Future}
+import spray.httpx.unmarshalling.Unmarshaller
 
 trait ElasticRequest[T, Response] {
   def request(req: T): HttpRequest
@@ -26,6 +31,10 @@ class SprayElasticClient(host: String, port: Int, useHttps: Boolean = false, cre
 
   def pipeline[Out: FromResponseUnmarshaller] = basePipeline ~> unmarshal[Out]
 
-  def execute[T, Response](request: T)(implicit er: ElasticRequest[T, Response], fru: FromResponseUnmarshaller[Response]): Future[Response] =
-    er.request(request) ~> pipeline[Response]
+  def execute[T, Response](request: T)(implicit
+      er: ElasticRequest[T, Response],
+      fru: FromResponseUnmarshaller[Response]): Future[Response] =
+    (er.request(request) ~> pipeline[Response]) transform(identity, {
+      case ex: UnsuccessfulResponseException => FailedRequest(ex.response.status)
+    })
 }
