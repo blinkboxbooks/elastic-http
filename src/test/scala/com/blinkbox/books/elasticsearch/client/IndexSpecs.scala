@@ -8,7 +8,7 @@ import com.blinkbox.books.elasticsearch.client.SprayElasticClientRequests._
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
 
-class IndexAndGetSpecs extends FlatSpec with Matchers with ElasticTest {
+class IndexSpecs extends FlatSpec with Matchers with ElasticTest {
 
   import JsonSupport.json4sUnmarshaller
 
