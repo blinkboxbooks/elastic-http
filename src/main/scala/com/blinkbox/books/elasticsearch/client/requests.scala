@@ -131,7 +131,7 @@ trait CreateIndexSupport {
   implicit object CreateIndexElasticRequest extends ElasticRequest[CreateIndexDefinition, AcknowledgedResponse] {
     override def request(req: CreateIndexDefinition): HttpRequest = {
       val builtRequest = req.build
-      Post(s"/${builtRequest.indices.mkString(",")}", req._source.string())
+      Put(s"/${builtRequest.indices.mkString(",")}", req._source.string())
     }
   }
 }
@@ -150,3 +150,4 @@ object SprayElasticClientRequests
   with GetSupport
   with TypedGetSupport
   with StatusSupport
+  with CreateIndexSupport

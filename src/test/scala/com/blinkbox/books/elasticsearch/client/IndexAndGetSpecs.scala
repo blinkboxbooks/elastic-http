@@ -21,7 +21,7 @@ class IndexAndGetSpecs extends FlatSpec with Matchers with BeforeAndAfterAll wit
   implicit val as = ActorSystem("examples")
   implicit val ec = as.dispatcher
 
-  val client = new SprayElasticClient("localhost", 9200)
+  val client = new SprayElasticClient("localhost", 12345)
 
   import com.blinkbox.books.elasticsearch.client.SprayElasticClientRequests._
   import com.sksamuel.elastic4s.ElasticDsl._
@@ -32,6 +32,7 @@ class IndexAndGetSpecs extends FlatSpec with Matchers with BeforeAndAfterAll wit
   override def beforeAll() {
     super.beforeAll()
     es = new EmbeddedElasticSearch
+    es.start()
   }
 
   override def afterAll() {
@@ -52,6 +53,8 @@ class IndexAndGetSpecs extends FlatSpec with Matchers with BeforeAndAfterAll wit
   }
 
   it should "be able to create an index with some mappings" in {
-    // TODO...
+    whenRequestDone(create index("foo")) check { resp =>
+      resp.acknowledged shouldBe true
+    }
   }
 }

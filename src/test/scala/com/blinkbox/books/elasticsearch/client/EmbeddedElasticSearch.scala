@@ -19,6 +19,7 @@ class EmbeddedElasticSearch {
     .put("path.data", dataDir.toString)
     .put("cluster.name", clusterName)
     .put("http.enabled", true)
+    .put("http.port", 12345)
     .build
 
   private lazy val node = nodeBuilder().local(true).settings(settings).build
@@ -29,13 +30,13 @@ class EmbeddedElasticSearch {
 
     val actionGet = client.admin.cluster.health(
       Requests
-        .clusterHealthRequest(clusterName)
-        .timeout(TimeValue.timeValueSeconds(30))
+        .clusterHealthRequest("_all")
+        .timeout(TimeValue.timeValueSeconds(5))
         .waitForGreenStatus()
         .waitForEvents(Priority.LANGUID)
         .waitForRelocatingShards(0)).actionGet
 
-    if (actionGet.isTimedOut) sys.error("The ES cluster didn't go green within 30 seconds")
+    if (actionGet.isTimedOut) sys.error("The ES cluster didn't go green within the extablished timeout")
   }
 
   def stop(): Unit = {
