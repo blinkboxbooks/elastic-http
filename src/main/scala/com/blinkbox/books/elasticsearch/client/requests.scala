@@ -125,10 +125,10 @@ trait TypedSearchSupport {
   }
 
   class TypedSearchElasticRequest[T: FromResponseUnmarshaller]
-    extends ElasticRequest[SearchDefinition, SearchResponse[T]]
+    extends ElasticRequest[TypedSearchDefinition[T], SearchResponse[T]]
     with SearchBase {
 
-    override def request(req: SearchDefinition): HttpRequest = requestFor(req.req)
+    override def request(req: TypedSearchDefinition[T]): HttpRequest = requestFor(req.req)
   }
 
   implicit def typedSearchElasticRequest[T: FromResponseUnmarshaller] = new TypedSearchElasticRequest[T]
@@ -175,6 +175,15 @@ trait DeleteIndexSupport {
   }
 }
 
+trait RefreshIndicesSupport {
+  case class RefreshIndices(indices: Iterable[String])
+  val RefreshAllIndices = RefreshIndices("_all" :: Nil)
+
+  implicit object RefreshIndicesElasticRequest extends ElasticRequest[RefreshIndices, RefreshIndicesResponse] {
+    override def request(req: RefreshIndices): HttpRequest = Post(s"/${req.indices.mkString(",")}/_refresh")
+  }
+}
+
 trait CheckExistenceSupport {
   case class CheckExistence(index: String, `type`: Option[String] = None)
 
@@ -201,6 +210,7 @@ trait StatusSupport {
 object SprayElasticClientRequests
   extends IndexSupport
   with SearchSupport
+  with TypedSearchSupport
   with GetSupport
   with TypedGetSupport
   with StatusSupport
@@ -208,3 +218,4 @@ object SprayElasticClientRequests
   with DeleteIndexSupport
   with CheckExistenceSupport
   with DeleteByIdSupport
+  with RefreshIndicesSupport

@@ -35,10 +35,10 @@ trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll wi
     es.stop()
   }
 
-  override def beforeEach() {
-    import ElasticDsl._
-    client.execute(delete index "_all")
-  }
+  // override def beforeEach() {
+  //   import ElasticDsl._
+  //   client.execute(delete index "_all")
+  // }
 
   def isOk[T] = { _: T => () }
 

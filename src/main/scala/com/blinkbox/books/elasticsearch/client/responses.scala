@@ -12,8 +12,8 @@ case class GetResponse[T](
 )
 
 case class ShardsStats(total: Int, successful: Int, failed: Int)
-case class SearchHit[T](_index: String, _type: String, _id: Int, _source: T)
-case class SearchHits[T](total: Int, hits: Array[SearchHit[T]])
+case class SearchHit[T](_index: String, _type: String, _id: String, _source: T)
+case class SearchHits[T](total: Int, hits: Seq[SearchHit[T]])
 case class SearchResponse[T](
   _shards: ShardsStats,
   hits: SearchHits[T]
@@ -39,5 +39,7 @@ case class StatusResponse(
 case class AcknowledgedResponse(acknowledged: Boolean)
 
 case class DeleteResponse(found: Boolean, _index: String, _type: String, _id: String, _version: Long)
+
+case class RefreshIndicesResponse(_shards: ShardsStats)
 
 case class FailedRequest(statusCode: StatusCode) extends Exception(s"Error from ES: $statusCode")
