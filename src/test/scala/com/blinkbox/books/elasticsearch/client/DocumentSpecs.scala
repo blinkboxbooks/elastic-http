@@ -1,4 +1,3 @@
-
 package com.blinkbox.books.elasticsearch.client
 
 import com.blinkbox.books.elasticsearch.client.SprayElasticClientRequests._
@@ -51,6 +50,16 @@ class DocumentSpecs extends FlatSpec with Matchers with ElasticTest {
         getResp._id should equal(idxResp._id)
         getResp._source should equal(Some(troutBook))
       }
+    }
+  }
+
+  it should "index a document and delete it when requested" in {
+    successfulRequest(index into "catalogue" -> "book" doc troutBookSource id troutBook.isbn) check isOk
+    successfulRequest(delete id troutBook.isbn from "catalogue" -> "book") check { deleteResp =>
+      deleteResp.found shouldBe true
+      deleteResp._id should equal(troutBook.isbn)
+      deleteResp._index should equal("catalogue")
+      deleteResp._type should equal("book")
     }
   }
 }

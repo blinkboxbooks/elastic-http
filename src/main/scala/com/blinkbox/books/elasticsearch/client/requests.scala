@@ -2,7 +2,8 @@ package com.blinkbox.books.elasticsearch.client
 
 import com.sksamuel.elastic4s.DeleteIndexDefinition
 import com.sksamuel.elastic4s.{ IndexDefinition, GetDefinition }
-import com.sksamuel.elastic4s.ElasticDsl.{CreateIndexDefinition, SearchDefinition}
+import com.sksamuel.elastic4s.ElasticDsl.{CreateIndexDefinition, SearchDefinition, DeleteByIdDefinition}
+import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.search.SearchRequest
@@ -76,9 +77,9 @@ trait IndexSupport {
       "version" -> request.version.toString,
       "refresh" -> request.refresh.toString,
       "timeout" -> request.timeout.toString,
-      "replication_type" -> request.replicationType.toString,
-      "consistency_level" -> request.consistencyLevel.toString,
-      "op_type" -> request.opType.toString,
+      "replication" -> request.replicationType.toString.toLowerCase,
+      "consistency" -> request.consistencyLevel.toString.toLowerCase,
+      "op_type" -> request.opType.toString.toLowerCase,
       "timestamp" -> request.timestamp,
       "parent" -> request.parent,
       "routing" -> request.routing
@@ -133,6 +134,29 @@ trait TypedSearchSupport {
   implicit def typedSearchElasticRequest[T: FromResponseUnmarshaller] = new TypedSearchElasticRequest[T]
 }
 
+trait DeleteByIdSupport {
+  implicit object DeleteByIdElasticRequest extends ElasticRequest[DeleteByIdDefinition, DeleteResponse] {
+
+    def urlFor(req: DeleteRequest) = s"/${req.index}/${req.`type`}/${req.id}"
+
+    def paramsFor(request: DeleteRequest): Map[String, String] = Map(
+      "version_type" -> request.versionType.name.toLowerCase,
+      "version" -> request.version.toString,
+      "refresh" -> request.refresh.toString,
+      "timeout" -> request.timeout.toString,
+      "replication" -> request.replicationType.toString.toLowerCase,
+      "consistency" -> request.consistencyLevel.toString.toLowerCase,
+      "routing" -> request.routing
+    ).filter(_._2 != null)
+
+    override def request(req: DeleteByIdDefinition): HttpRequest = {
+      val builtRequest = req.build
+
+      Delete(Uri(urlFor(builtRequest)).withQuery(paramsFor(builtRequest)))
+    }
+  }
+}
+
 trait CreateIndexSupport {
   implicit object CreateIndexElasticRequest extends ElasticRequest[CreateIndexDefinition, AcknowledgedResponse] {
     override def request(req: CreateIndexDefinition): HttpRequest = {
@@ -183,3 +207,4 @@ object SprayElasticClientRequests
   with CreateIndexSupport
   with DeleteIndexSupport
   with CheckExistenceSupport
+  with DeleteByIdSupport

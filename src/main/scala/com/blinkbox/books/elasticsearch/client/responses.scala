@@ -38,4 +38,6 @@ case class StatusResponse(
 
 case class AcknowledgedResponse(acknowledged: Boolean)
 
+case class DeleteResponse(found: Boolean, _index: String, _type: String, _id: String, _version: Long)
+
 case class FailedRequest(statusCode: StatusCode) extends Exception(s"Error from ES: $statusCode")
