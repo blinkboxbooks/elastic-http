@@ -11,7 +11,7 @@ import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.node.NodeBuilder._
 import scala.util.Random
 
-class EmbeddedElasticSearch {
+class EmbeddedElasticSearch(port: Int) {
 
   private val clusterName = "elastic_http_" + Random.nextInt(1000)
   private val dataDir = Files.createTempDirectory("elasticsearch_data_").toFile
@@ -19,7 +19,7 @@ class EmbeddedElasticSearch {
     .put("path.data", dataDir.toString)
     .put("cluster.name", clusterName)
     .put("http.enabled", true)
-    .put("http.port", 12345)
+    .put("http.port", port)
     .build
 
   private lazy val node = nodeBuilder().local(true).settings(settings).build

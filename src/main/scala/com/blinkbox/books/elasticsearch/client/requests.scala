@@ -71,24 +71,25 @@ trait IndexSupport {
     def urlFor(req: IndexRequest) = s"/${req.index}/${req.`type`}${maybeSegment(req.id)}"
 
     def paramsFor(request: IndexRequest): Map[String, String] = Map(
-      "ttl" -> request.ttl.toString,
-      "versionType" -> request.versionType.toString,
+      "ttl" -> Option(request.ttl).filter(_ > 0).map(_.toString).getOrElse(null),
+      "version_type" -> request.versionType.name.toLowerCase,
       "version" -> request.version.toString,
       "refresh" -> request.refresh.toString,
       "timeout" -> request.timeout.toString,
-      "replicationType" -> request.replicationType.toString,
-      "consistencyLevel" -> request.consistencyLevel.toString,
-      "opType" -> request.opType.toString,
+      "replication_type" -> request.replicationType.toString,
+      "consistency_level" -> request.consistencyLevel.toString,
+      "op_type" -> request.opType.toString,
       "timestamp" -> request.timestamp,
       "parent" -> request.parent,
       "routing" -> request.routing
-    )
+    ).filter(_._2 != null)
 
     override def request(req: IndexDefinition): HttpRequest = {
       val builtRequest = req.build
       val uri = Uri(urlFor(builtRequest)).withQuery(paramsFor(builtRequest))
+      val source = builtRequest.source.toUtf8
 
-      Put(uri, req._fieldsAsXContent.string)
+      Option(builtRequest.id).fold(Post)(_ => Put)(uri, builtRequest.source.toUtf8)
     }
   }
 }

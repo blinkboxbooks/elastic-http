@@ -15,22 +15,19 @@ trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll wi
 
   override implicit def patienceConfig = PatienceConfig(timeout = Span(3000, Millis), interval = Span(100, Millis))
 
-  object JsonSupport extends Json4sJacksonSupport {
-    implicit val json4sJacksonFormats = DefaultFormats
-  }
-
   import JsonSupport.json4sUnmarshaller
 
   implicit val as = ActorSystem("examples")
   implicit val ec = as.dispatcher
 
-  val client = new SprayElasticClient("localhost", 12345)
+  val esPort = 12000 + (Thread.currentThread.getId % 100).toInt
+  val client = new SprayElasticClient("localhost", esPort)
 
   var es: EmbeddedElasticSearch = _
 
   override def beforeAll() {
     super.beforeAll()
-    es = new EmbeddedElasticSearch
+    es = new EmbeddedElasticSearch(esPort)
     es.start()
   }
 

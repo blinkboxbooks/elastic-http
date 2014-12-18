@@ -2,12 +2,28 @@ package com.blinkbox.books.elasticsearch.client
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
+import com.sksamuel.elastic4s.source.DocumentSource
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization._
+import spray.httpx.Json4sJacksonSupport
+
+object JsonSupport extends Json4sJacksonSupport {
+  implicit val json4sJacksonFormats = DefaultFormats
+}
 
 object TestFixtures {
   case class Distribution(distributed: Boolean, price: Double)
   case class Book(isbn: String, title: String, author: String, distribution: Distribution)
 
-  val aBook = Book("1234567890123", "A book", "An author", Distribution(true, 1.23))
+  case class BookJsonSource(book: Book) extends DocumentSource {
+    import JsonSupport._
+    def json = write(book)
+  }
+
+  val troutBook = Book(
+    "1234567890123", "The Protocols of the Elders of Tralfamadore", "Kilgore Trout", Distribution(true, 1.23))
+
+  val troutBookSource = BookJsonSource(troutBook)
 
   val indexDef = create index("catalogue") mappings (
     "book" as (
