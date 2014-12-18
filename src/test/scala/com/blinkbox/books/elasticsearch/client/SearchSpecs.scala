@@ -1,13 +1,11 @@
 package com.blinkbox.books.elasticsearch.client
 
-import com.blinkbox.books.elasticsearch.client.SprayElasticClientRequests._
 import com.blinkbox.books.test.FailHelper
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
-import org.elasticsearch.index.VersionType
-import org.scalatest.{FlatSpec, Matchers}
-import spray.http.StatusCodes
+import org.scalatest.{ FlatSpec, Matchers }
 import spray.httpx.Json4sJacksonSupport
+import ElasticClientApi._
 
 class SearchSpecs extends FlatSpec with Matchers with ElasticTest {
 

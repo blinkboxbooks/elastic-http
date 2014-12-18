@@ -2,15 +2,13 @@ package com.blinkbox.books.elasticsearch.client
 
 import akka.actor.ActorSystem
 import com.blinkbox.books.test.FailHelper
-import com.sksamuel.elastic4s.ElasticDsl
-import org.json4s.DefaultFormats
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
 import spray.httpx.Json4sJacksonSupport
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
-trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll with BeforeAndAfterEach with DeleteIndexSupport {
+trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll with BeforeAndAfterEach {
   this: Suite =>
 
   override implicit def patienceConfig = PatienceConfig(timeout = Span(3000, Millis), interval = Span(100, Millis))
@@ -34,11 +32,6 @@ trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll wi
   override def afterAll() {
     es.stop()
   }
-
-  // override def beforeEach() {
-  //   import ElasticDsl._
-  //   client.execute(delete index "_all")
-  // }
 
   def isOk[T] = { _: T => () }
 

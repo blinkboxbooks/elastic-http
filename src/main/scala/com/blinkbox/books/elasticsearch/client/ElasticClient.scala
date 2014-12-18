@@ -1,20 +1,15 @@
 package com.blinkbox.books.elasticsearch.client
 
 import akka.actor.ActorRefFactory
+import scala.concurrent.{ExecutionContext, Future}
 import spray.client.pipelining._
-import spray.http.ContentTypes
-import spray.http.HttpEntity
-import spray.http.HttpHeaders.Host
-import spray.http.HttpHeaders
-import spray.http.MediaRanges
-import spray.http.MediaTypes
 import spray.http.{HttpCredentials, HttpRequest}
-import spray.httpx.PipelineException
+import spray.http.HttpHeaders
+import spray.http.HttpHeaders.Host
 import spray.httpx.UnsuccessfulResponseException
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
-import scala.concurrent.{ExecutionContext, Future}
-import spray.httpx.unmarshalling.Unmarshaller
+import api._
 
 trait ElasticRequest[T, Response] {
   def request(req: T): HttpRequest
@@ -43,3 +38,16 @@ class SprayElasticClient(host: String, port: Int, useHttps: Boolean = false, cre
       case ex: UnsuccessfulResponseException => FailedRequest(ex.response.status)
     })
 }
+
+object ElasticClientApi
+  extends IndexSupport
+  with SearchSupport
+  with TypedSearchSupport
+  with GetSupport
+  with TypedGetSupport
+  with StatusSupport
+  with CreateIndexSupport
+  with DeleteIndexSupport
+  with CheckExistenceSupport
+  with DeleteByIdSupport
+  with RefreshIndicesSupport

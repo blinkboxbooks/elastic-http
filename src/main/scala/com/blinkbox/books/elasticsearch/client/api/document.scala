@@ -1,20 +1,15 @@
-package com.blinkbox.books.elasticsearch.client
+package com.blinkbox.books.elasticsearch.client.api
 
-import com.sksamuel.elastic4s.DeleteIndexDefinition
-import com.sksamuel.elastic4s.{ IndexDefinition, GetDefinition }
-import com.sksamuel.elastic4s.ElasticDsl.{CreateIndexDefinition, SearchDefinition, DeleteByIdDefinition}
+import com.blinkbox.books.elasticsearch.client._
+import com.sksamuel.elastic4s.{DeleteIndexDefinition, GetDefinition, IndexDefinition}
+import com.sksamuel.elastic4s.ElasticDsl.DeleteByIdDefinition
 import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.index.IndexRequest
-import org.elasticsearch.action.search.SearchRequest
 import org.json4s.JValue
-import spray.http.HttpEntity
-import spray.http.MediaRanges
-import spray.http.{ Uri, HttpRequest }
 import spray.client.pipelining._
-import spray.httpx.PipelineException
+import spray.http.{HttpRequest, Uri}
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
-import spray.httpx.unmarshalling.Unmarshaller
 
 trait GetSupport {
   sealed trait GetBase {
@@ -95,45 +90,6 @@ trait IndexSupport {
   }
 }
 
-trait SearchSupport {
-  sealed trait SearchBase {
-    def urlFor(req: SearchRequest) = s"/${req.indices.mkString(",")}/${req.types.mkString(",")}/_search"
-
-    def paramsFor(request: SearchRequest): Map[String, String] =
-      Option(request.routing).fold(Map.empty[String, String])(r => Map("routing" -> r))
-
-    def requestFor(req: SearchDefinition): HttpRequest = {
-      val builtRequest = req.build
-      val uri = Uri(urlFor(builtRequest)).withQuery(paramsFor(builtRequest))
-
-      Post(uri, req._builder.toString)
-    }
-  }
-
-  implicit object SearchElasticRequest extends ElasticRequest[SearchDefinition, SearchResponse[JValue]] with SearchBase {
-    override def request(req: SearchDefinition): HttpRequest = requestFor(req)
-  }
-}
-
-trait TypedSearchSupport {
-  this: SearchSupport =>
-
-  case class TypedSearchDefinition[T: FromResponseUnmarshaller](req: SearchDefinition)
-
-  implicit class SearchDefinitionOps(val req: SearchDefinition) {
-    def sourceIs[T: FromResponseUnmarshaller] = TypedSearchDefinition[T](req)
-  }
-
-  class TypedSearchElasticRequest[T: FromResponseUnmarshaller]
-    extends ElasticRequest[TypedSearchDefinition[T], SearchResponse[T]]
-    with SearchBase {
-
-    override def request(req: TypedSearchDefinition[T]): HttpRequest = requestFor(req.req)
-  }
-
-  implicit def typedSearchElasticRequest[T: FromResponseUnmarshaller] = new TypedSearchElasticRequest[T]
-}
-
 trait DeleteByIdSupport {
   implicit object DeleteByIdElasticRequest extends ElasticRequest[DeleteByIdDefinition, DeleteResponse] {
 
@@ -156,66 +112,3 @@ trait DeleteByIdSupport {
     }
   }
 }
-
-trait CreateIndexSupport {
-  implicit object CreateIndexElasticRequest extends ElasticRequest[CreateIndexDefinition, AcknowledgedResponse] {
-    override def request(req: CreateIndexDefinition): HttpRequest = {
-      val builtRequest = req.build
-      Put(s"/${builtRequest.indices.mkString(",")}", req._source.string())
-    }
-  }
-}
-
-trait DeleteIndexSupport {
-  implicit object DeleteIndexElasticRequest extends ElasticRequest[DeleteIndexDefinition, AcknowledgedResponse] {
-    override def request(req: DeleteIndexDefinition): HttpRequest = {
-      val builtRequest = req.build
-      Delete(s"/${builtRequest.indices.mkString(",")}")
-    }
-  }
-}
-
-trait RefreshIndicesSupport {
-  case class RefreshIndices(indices: Iterable[String])
-  val RefreshAllIndices = RefreshIndices("_all" :: Nil)
-
-  implicit object RefreshIndicesElasticRequest extends ElasticRequest[RefreshIndices, RefreshIndicesResponse] {
-    override def request(req: RefreshIndices): HttpRequest = Post(s"/${req.indices.mkString(",")}/_refresh")
-  }
-}
-
-trait CheckExistenceSupport {
-  case class CheckExistence(index: String, `type`: Option[String] = None)
-
-  implicit val UnitUnmarshaller = Unmarshaller[Unit](MediaRanges.`*/*`) {
-    case HttpEntity.Empty => ()
-    case _ => throw new PipelineException("Expected no-content in the response")
-  }
-
-  implicit object CheckExistenceElasticRequest extends ElasticRequest[CheckExistence, Unit] {
-    override def request(req: CheckExistence): HttpRequest = {
-      Head(s"/${req.index}${req.`type`.fold("")(t => s"/${t}")}")
-    }
-  }
-}
-
-trait StatusSupport {
-  case object StatusRequest
-
-  implicit object StatusElasticRequest extends ElasticRequest[StatusRequest.type, StatusResponse] {
-    override def request(req: StatusRequest.type): HttpRequest = Get("/")
-  }
-}
-
-object SprayElasticClientRequests
-  extends IndexSupport
-  with SearchSupport
-  with TypedSearchSupport
-  with GetSupport
-  with TypedGetSupport
-  with StatusSupport
-  with CreateIndexSupport
-  with DeleteIndexSupport
-  with CheckExistenceSupport
-  with DeleteByIdSupport
-  with RefreshIndicesSupport
