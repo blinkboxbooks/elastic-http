@@ -1,11 +1,9 @@
-import AssemblyKeys._
-
-name := "elastic-http"
-
 lazy val buildSettings = Seq(
+  name := "elastic-http",
   organization := "com.blinkbox.books",
   version := scala.util.Try(scala.io.Source.fromFile("VERSION").mkString.trim).getOrElse("0.0.0"),
   scalaVersion := "2.11.4",
+  crossScalaVersions := Seq("2.11.4"),
   scalacOptions := Seq("-unchecked", "-deprecation", "-feature", "-encoding", "utf8", "-target:jvm-1.7"),
   libraryDependencies ++= Seq(
     "com.sksamuel.elastic4s" %% "elastic4s"       % "1.4.0",
