@@ -11,7 +11,7 @@ import spray.httpx.unmarshalling.FromResponseUnmarshaller
 trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll with BeforeAndAfterEach {
   this: Suite =>
 
-  override implicit def patienceConfig = PatienceConfig(timeout = Span(3000, Millis), interval = Span(100, Millis))
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(30000, Millis), interval = Span(250, Millis))
 
   import JsonSupport.json4sUnmarshaller
 
