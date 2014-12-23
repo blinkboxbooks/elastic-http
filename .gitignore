@@ -1,14 +1,11 @@
 .DS_Store
 
-db/schema.rb
 doc/
 pkg/
-*.properties
 *.db
 *.dat
 *.log
 last_response.html
-migration.sql
 .idea/
 .bundle/
 vendor/
