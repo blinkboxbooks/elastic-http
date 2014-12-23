@@ -20,6 +20,10 @@ class EmbeddedElasticSearch(port: Int) {
     .put("cluster.name", clusterName)
     .put("http.enabled", true)
     .put("http.port", port)
+    .put("index.store.type", "memory")
+    .put("index.number_of_shards", 1)
+    .put("index.number_of_replicas", 0)
+    .put("discovery.zen.ping.multicast.enabled", false)
     .build
 
   private lazy val node = nodeBuilder().local(true).settings(settings).build
