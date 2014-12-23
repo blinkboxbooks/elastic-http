@@ -31,7 +31,7 @@ class EmbeddedElasticSearch(port: Int) {
     val actionGet = client.admin.cluster.health(
       Requests
         .clusterHealthRequest("_all")
-        .timeout(TimeValue.timeValueSeconds(5))
+        .timeout(TimeValue.timeValueSeconds(30))
         .waitForGreenStatus()
         .waitForEvents(Priority.LANGUID)
         .waitForRelocatingShards(0)).actionGet
