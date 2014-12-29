@@ -10,6 +10,7 @@ lazy val buildSettings = Seq(
     "com.typesafe.akka"   %%  "akka-actor"        % "2.3.7",
     "io.spray"            %%  "spray-client"      % "1.3.2",
     "org.json4s"          %%  "json4s-jackson"    % "3.2.11",
+    "org.elasticsearch" % "elasticsearch-groovy" % "1.4.2",
     "com.blinkbox.books"  %%  "common-scala-test" % "0.3.0" % Test
   )
 )

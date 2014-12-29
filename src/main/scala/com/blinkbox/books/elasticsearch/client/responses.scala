@@ -43,3 +43,5 @@ case class DeleteResponse(found: Boolean, _index: String, _type: String, _id: St
 case class RefreshIndicesResponse(_shards: ShardsStats)
 
 case class FailedRequest(statusCode: StatusCode) extends Exception(s"Error from ES: $statusCode")
+
+case class UpdateResponse(_index: String, _type: String, _id: String, _version: Long)

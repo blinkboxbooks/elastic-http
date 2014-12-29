@@ -51,3 +51,4 @@ object ElasticClientApi
   with CheckExistenceSupport
   with DeleteByIdSupport
   with RefreshIndicesSupport
+  with UpdateSupport
