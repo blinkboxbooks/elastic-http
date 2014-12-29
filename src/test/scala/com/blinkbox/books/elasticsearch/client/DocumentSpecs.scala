@@ -17,6 +17,11 @@ class DocumentSpecs extends FlatSpec with Matchers with ElasticTest {
 
   override def beforeAll() {
     super.beforeAll()
+  }
+
+  override def beforeEach() {
+    super.beforeEach()
+    successfulRequest(deleteIndex("_all")) check isOk
     successfulRequest(indexDef) check isOk
   }
 
@@ -98,6 +103,35 @@ class DocumentSpecs extends FlatSpec with Matchers with ElasticTest {
       b._type should equal("book")
       b._index should equal("catalogue")
       b._source should equal(Some(troutBook.copy(title = "Maniacs in the Fourth Dimension")))
+    }
+  }
+
+  it should "support bulk operations" in {
+    val updatingBook = Book(
+      "0987654321098", "The sirens of Titan", "Kilgore Trout", Distribution(true, 3.21))
+    val updatingBookSource = BookJsonSource(updatingBook)
+
+    val indexingBook = Book(
+      "5555555555555", "Slaughterhouse 5", "Kurt Vonnegut", Distribution(true, 5.00))
+    val indexingBookSource = BookJsonSource(indexingBook)
+
+    implicit val formats = JsonSupport.json4sFormats
+
+    successfulRequest(index into "catalogue" -> "book" doc troutBookSource id troutBook.isbn) check isOk
+    successfulRequest(index into "catalogue" -> "book" doc updatingBookSource id updatingBook.isbn) check isOk
+
+    successfulRequest(bulk(
+      delete id troutBook.isbn from "catalogue" -> "book",
+      update(updatingBook.isbn) in "catalogue" -> "book" doc updatingBookSource,
+      index into "catalogue" -> "book" doc indexingBookSource id indexingBook.isbn
+    )) check { res =>
+      res.errors shouldBe false
+      res.items should contain theSameElementsAs(
+        DeleteResponseItem("catalogue", "book", "1234567890123", 2, StatusCodes.OK, true, None) ::
+          UpdateResponseItem("catalogue", "book", "0987654321098", StatusCodes.OK, None) ::
+          IndexResponseItem("catalogue", "book", "5555555555555", 1, StatusCodes.Created, None) ::
+          Nil
+      )
     }
   }
 }

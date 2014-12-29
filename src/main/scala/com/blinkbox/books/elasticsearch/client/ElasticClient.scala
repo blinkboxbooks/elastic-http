@@ -35,7 +35,7 @@ class SprayElasticClient(host: String, port: Int, useHttps: Boolean = false, cre
       er: ElasticRequest[T, Response],
       fru: FromResponseUnmarshaller[Response]): Future[Response] =
     (er.request(request) ~> pipeline[Response]) transform(identity, {
-      case ex: UnsuccessfulResponseException => FailedRequest(ex.response.status)
+      case ex: UnsuccessfulResponseException => FailedRequest(ex.response.status, ex.response.entity.asString)
     })
 }
 
@@ -52,3 +52,4 @@ object ElasticClientApi
   with DeleteByIdSupport
   with RefreshIndicesSupport
   with UpdateSupport
+  with BulkSupport

@@ -38,6 +38,7 @@ The request instances implemented are divided in files following the ES guide's 
     * Get a document by id (with optional type support)
     * Delete a document by id
     * Update
+    * Bulk index/update/delete operations
 
 * Search APIs:
     * Perform a search query (with optional type support)
