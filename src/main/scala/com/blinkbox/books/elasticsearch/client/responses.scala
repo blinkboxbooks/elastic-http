@@ -42,4 +42,33 @@ case class DeleteResponse(found: Boolean, _index: String, _type: String, _id: St
 
 case class RefreshIndicesResponse(_shards: ShardsStats)
 
-case class FailedRequest(statusCode: StatusCode) extends Exception(s"Error from ES: $statusCode")
+case class FailedRequest(statusCode: StatusCode, content: String) extends Exception(s"Error from ES: $statusCode")
+
+case class UpdateResponse(_index: String, _type: String, _id: String, _version: Long)
+
+sealed trait BulkResponseItem
+case class DeleteResponseItem(
+  _index: String,
+  _type: String,
+  _id: String,
+  _version: Long,
+  status: StatusCode,
+  found: Boolean,
+  error: Option[String]
+) extends BulkResponseItem
+case class UpdateResponseItem(
+  _index: String,
+  _type: String,
+  _id: String,
+  status: StatusCode,
+  error: Option[String]
+) extends BulkResponseItem
+case class IndexResponseItem(
+  _index: String,
+  _type: String,
+  _id: String,
+  _version: Long,
+  status: StatusCode,
+  error: Option[String]
+) extends BulkResponseItem
+case class BulkResponse(took: Int, errors: Boolean, items: Seq[BulkResponseItem])

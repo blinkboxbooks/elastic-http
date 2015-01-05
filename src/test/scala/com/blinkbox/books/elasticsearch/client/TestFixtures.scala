@@ -7,10 +7,6 @@ import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization._
 import spray.httpx.Json4sJacksonSupport
 
-object JsonSupport extends Json4sJacksonSupport {
-  implicit val json4sJacksonFormats = DefaultFormats
-}
-
 object TestFixtures {
   case class Distribution(distributed: Boolean, price: Double)
   case class Book(isbn: String, title: String, author: String, distribution: Distribution)
