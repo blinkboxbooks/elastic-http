@@ -16,7 +16,7 @@ import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
 trait GetSupport {
   sealed trait GetBase {
-    def urlFor(request: GetRequest) = s"/${request.index}/${request.`type`}/${request.id}"
+    def urlFor(request: GetRequest) = Uri(s"/${request.index}/${request.`type`}/${request.id}").withQuery(paramsFor(request))
 
     def fieldsFor(request: GetRequest): Map[String, String] = Option(request.fields).
       fold(Map.empty[String, String])(f => Map("fields" -> f.mkString(",")))
