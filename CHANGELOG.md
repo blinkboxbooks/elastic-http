@@ -1,5 +1,14 @@
 # Change log
 
+## 0.0.4 ([#7](https://git.mobcastdev.com/Labs/elastic-http/pull/7) 2015-01-05 11:35:44)
+
+Bulk support
+
+### Improvements
+
+This patch introduces support for [Elasticsearch bulk APIs](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-bulk.html) and Update APIs.
+
+
 ## 0.0.3 ([#4](https://git.mobcastdev.com/Labs/elastic-http/pull/4) 2014-12-23 12:15:25)
 
 Attempt to reduce the footprint of the embedded ES
