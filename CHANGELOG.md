@@ -1,5 +1,13 @@
 # Change log
 
+## 0.0.5 ([#5](https://git.mobcastdev.com/Labs/elastic-http/pull/5) 2015-01-05 16:56:24)
+
+Add query parameters to GET document URL
+
+### Bugfix
+
+Fix missing parameters on the URL for document GET API
+
 ## 0.0.4 ([#7](https://git.mobcastdev.com/Labs/elastic-http/pull/7) 2015-01-05 11:35:44)
 
 Bulk support
