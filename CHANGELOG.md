@@ -1,5 +1,11 @@
 # Change log
 
+## 0.0.6 ([#8](https://git.mobcastdev.com/Labs/elastic-http/pull/8) 2015-01-06 10:08:06)
+
+Make common bulk response fields as part of the BulkResponseItem trait.
+
+Patch
+
 ## 0.0.5 ([#5](https://git.mobcastdev.com/Labs/elastic-http/pull/5) 2015-01-05 16:56:24)
 
 Add query parameters to GET document URL
