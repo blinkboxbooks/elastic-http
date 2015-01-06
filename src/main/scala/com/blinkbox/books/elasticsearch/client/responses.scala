@@ -1,6 +1,6 @@
 package com.blinkbox.books.elasticsearch.client
 
-import spray.http.StatusCode
+import spray.http.{StatusCodes, StatusCode}
 
 case class GetResponse[T](
   found: Boolean,
@@ -46,7 +46,13 @@ case class FailedRequest(statusCode: StatusCode, content: String) extends Except
 
 case class UpdateResponse(_index: String, _type: String, _id: String, _version: Long)
 
-sealed trait BulkResponseItem
+sealed trait BulkResponseItem {
+  def _index: String
+  def _type: String
+  def _id: String
+  def status: StatusCode
+  def error: Option[String]
+}
 case class DeleteResponseItem(
   _index: String,
   _type: String,
