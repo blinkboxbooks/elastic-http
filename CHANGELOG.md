@@ -1,5 +1,13 @@
 # Change log
 
+## 0.0.7 ([#9](https://git.mobcastdev.com/Labs/elastic-http/pull/9) 2015-01-08 14:09:54)
+
+PT-571 Introduce (typed) suggestions support for search
+
+### Improvements
+
+Introduce spellcheck and completion suggestions support with optional precise typing.
+
 ## 0.0.6 ([#8](https://git.mobcastdev.com/Labs/elastic-http/pull/8) 2015-01-06 10:08:06)
 
 Make common bulk response fields as part of the BulkResponseItem trait.
