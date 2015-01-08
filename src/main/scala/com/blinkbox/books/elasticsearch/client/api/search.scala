@@ -24,7 +24,7 @@ trait SearchSupport {
     }
   }
 
-  implicit object SearchElasticRequest extends ElasticRequest[SearchDefinition, SearchResponse[JValue]] with SearchBase {
+  implicit object SearchElasticRequest extends ElasticRequest[SearchDefinition, SearchResponse[JValue, JValue]] with SearchBase {
     override def request(req: SearchDefinition): HttpRequest = requestFor(req)
   }
 }
@@ -32,18 +32,22 @@ trait SearchSupport {
 trait TypedSearchSupport {
   this: SearchSupport =>
 
-  case class TypedSearchDefinition[T: FromResponseUnmarshaller](req: SearchDefinition)
+  case class TypedSearchDefinition[Document: FromResponseUnmarshaller, Suggestion: FromResponseUnmarshaller](req: SearchDefinition) {
+    def sourceIs[T: FromResponseUnmarshaller] = TypedSearchDefinition[T, Suggestion](req)
+    def suggestionIs[T: FromResponseUnmarshaller] = TypedSearchDefinition[Document, T](req)
+  }
 
   implicit class SearchDefinitionOps(val req: SearchDefinition) {
-    def sourceIs[T: FromResponseUnmarshaller] = TypedSearchDefinition[T](req)
+    def sourceIs[T: FromResponseUnmarshaller](implicit um: FromResponseUnmarshaller[JValue]) = TypedSearchDefinition[T, JValue](req)
+    def suggestionIs[T: FromResponseUnmarshaller](implicit um: FromResponseUnmarshaller[JValue]) = TypedSearchDefinition[JValue, T](req)
   }
 
-  class TypedSearchElasticRequest[T: FromResponseUnmarshaller]
-    extends ElasticRequest[TypedSearchDefinition[T], SearchResponse[T]]
+  class TypedSearchElasticRequest[Document: FromResponseUnmarshaller, Suggestion: FromResponseUnmarshaller]
+    extends ElasticRequest[TypedSearchDefinition[Document, Suggestion], SearchResponse[Document, Suggestion]]
     with SearchBase {
 
-    override def request(req: TypedSearchDefinition[T]): HttpRequest = requestFor(req.req)
+    override def request(req: TypedSearchDefinition[Document, Suggestion]): HttpRequest = requestFor(req.req)
   }
 
-  implicit def typedSearchElasticRequest[T: FromResponseUnmarshaller] = new TypedSearchElasticRequest[T]
+  implicit def typedSearchElasticRequest[Document: FromResponseUnmarshaller, Suggestion: FromResponseUnmarshaller] = new TypedSearchElasticRequest[Document, Suggestion]
 }

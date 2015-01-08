@@ -9,7 +9,17 @@ import spray.httpx.Json4sJacksonSupport
 
 object TestFixtures {
   case class Distribution(distributed: Boolean, price: Double)
-  case class Book(isbn: String, title: String, author: String, distribution: Distribution)
+
+  case class CompletionPayload(isbn: String, title: String)
+  case class Completion(input: List[String], output: String, payload: CompletionPayload)
+  object Completion {
+    def apply(isbn: String, title: String): Completion = Completion(title :: Nil, title, CompletionPayload(isbn, title))
+  }
+
+  case class Book(isbn: String, title: String, author: String, distribution: Distribution, autoComplete: Completion)
+  object Book {
+    def apply(isbn: String, title: String, author: String, distribution: Distribution): Book = Book(isbn, title, author, distribution, Completion(isbn, title))
+  }
 
   case class BookJsonSource(book: Book) extends DocumentSource {
     import JsonSupport._
@@ -29,7 +39,8 @@ object TestFixtures {
       "distribution" inner (
         "distributed" typed BooleanType,
         "price" typed DoubleType
-      )
+      ),
+      "autoComplete" typed CompletionType payloads true
     ) dynamic false
   )
 }

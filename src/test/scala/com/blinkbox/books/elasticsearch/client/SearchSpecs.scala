@@ -33,4 +33,57 @@ class SearchSpecs extends FlatSpec with Matchers with ElasticTest {
       resp.hits.hits should contain theSameElementsAs SearchHit("catalogue", "book", troutBook.isbn, troutBook) :: Nil
     }
   }
+
+  it should "support spellcheck suggestions" in {
+    successfulRequest(index into "catalogue" -> "book" id troutBook.isbn doc troutBookSource) check isOk
+    successfulRequest(RefreshAllIndices) check isOk
+
+    val q = "protolocs of trafalmadore"
+    val searchReq = successfulRequest((
+      search in "catalogue" -> "book" query (
+        matchPhrase("title", q)
+      ) suggestions (
+        suggest using phrase as "spellcheck" on q from "title" size 1 maxErrors 3
+      )).sourceIs[Book])
+
+    searchReq check { resp =>
+      resp.hits.total should equal(0)
+      resp.hits.hits should be(empty)
+      resp.suggest should be(defined)
+      resp.suggest foreach { suggestions =>
+        suggestions should be definedAt("spellcheck")
+        suggestions get "spellcheck" foreach { spellchecks =>
+          spellchecks should have size(1)
+
+          val spellcheck = spellchecks.head
+          spellcheck.text should equal("protolocs of trafalmadore")
+          spellcheck.options should have size(1)
+          spellcheck.options.head.text should equal("protocols of tralfamadore")
+        }
+      }
+    }
+  }
+
+  it should "support completion suggestions" in {
+    successfulRequest(index into "catalogue" -> "book" id troutBook.isbn doc troutBookSource) check isOk
+    successfulRequest(RefreshAllIndices) check isOk
+
+    val query = search in "catalogue" -> "book" suggestions (suggest using completion as "completions" on "the pro" from "autoComplete")
+
+    successfulRequest(query.sourceIs[Book].suggestionIs[CompletionPayload]) check { resp =>
+      resp.suggest should be(defined)
+      resp.suggest foreach { suggestions =>
+        val completions = suggestions.getOrElse("completions", Seq.empty)
+        completions should have size(1)
+
+        val completion = completions.head
+        completion.text should equal("the pro")
+        completion.options should have size(1)
+
+        val option = completion.options.head
+        option.text should equal("The Protocols of the Elders of Tralfamadore")
+        option.payload should equal(Some(troutBook.autoComplete.payload))
+      }
+    }
+  }
 }

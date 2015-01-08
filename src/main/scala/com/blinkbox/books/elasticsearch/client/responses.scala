@@ -14,9 +14,12 @@ case class GetResponse[T](
 case class ShardsStats(total: Int, successful: Int, failed: Int)
 case class SearchHit[T](_index: String, _type: String, _id: String, _source: T)
 case class SearchHits[T](total: Int, hits: Seq[SearchHit[T]])
-case class SearchResponse[T](
+case class SuggestionOption[Payload](text: String, score: Double, collate_match: Option[Boolean], payload: Option[Payload])
+case class Suggestion[Payload](text: String, offset: Int, length: Int, options: Seq[SuggestionOption[Payload]])
+case class SearchResponse[Document, Payload](
   _shards: ShardsStats,
-  hits: SearchHits[T]
+  hits: SearchHits[Document],
+  suggest: Option[Map[String, Seq[Suggestion[Payload]]]]
 )
 
 case class IndexResponse(_index: String, _type: String, _id: String, _version: Long, created: Boolean)
