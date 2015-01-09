@@ -1,5 +1,13 @@
 # Change log
 
+## 0.0.9 ([#11](https://git.mobcastdev.com/Labs/elastic-http/pull/11) 2015-01-09 12:03:12)
+
+Remove the JsonSupport and publish individual formats
+
+### Improvements
+
+Remove the public `JsonSupport` trait and publish the individual formats to be used by the library clients.
+
 ## 0.0.8 ([#10](https://git.mobcastdev.com/Labs/elastic-http/pull/10) 2015-01-09 11:19:33)
 
 Introduce logging capabilities for HTTP request/response
