@@ -3,6 +3,7 @@ package com.blinkbox.books.elasticsearch.client
 import akka.actor.ActorRefFactory
 import scala.concurrent.{ExecutionContext, Future}
 import spray.client.pipelining._
+import spray.http.HttpResponse
 import spray.http.{HttpCredentials, HttpRequest}
 import spray.http.HttpHeaders
 import spray.http.HttpHeaders.Host
@@ -21,15 +22,31 @@ trait ElasticClient {
       fru: FromResponseUnmarshaller[Response]): Future[Response]
 }
 
-class SprayElasticClient(host: String, port: Int, useHttps: Boolean = false, credentials: Option[HttpCredentials] = None)(implicit arf: ActorRefFactory, ec: ExecutionContext) extends ElasticClient {
+class SprayElasticClient(
+  host: String,
+  port: Int,
+  useHttps: Boolean = false,
+  credentials: Option[HttpCredentials] = None,
+  requestLogFn: HttpRequest => Unit = _ => (),
+  responseLogFn: HttpResponse => Unit = _ => ())(implicit arf: ActorRefFactory, ec: ExecutionContext) extends ElasticClient {
 
-  val setHost = (req: HttpRequest) => req.withEffectiveUri(useHttps, Host(host, port))
+  private val setHost = (req: HttpRequest) => req.withEffectiveUri(useHttps, Host(host, port))
 
-  val setCredentials = credentials.fold[HttpRequest => HttpRequest](identity)(addCredentials)
+  private val setCredentials = credentials.fold[HttpRequest => HttpRequest](identity)(addCredentials)
 
-  val basePipeline = setHost ~> setCredentials ~> sendReceive
+  private val logRequest = { (req: HttpRequest) =>
+    requestLogFn(req)
+    req
+  }
 
-  def pipeline[Out: FromResponseUnmarshaller] = basePipeline ~> unmarshal[Out]
+  private val logResponse = { (resp: HttpResponse) =>
+    responseLogFn(resp)
+    resp
+  }
+
+  private val basePipeline = setHost ~> setCredentials ~> logRequest ~> sendReceive ~> logResponse
+
+  private def pipeline[Out: FromResponseUnmarshaller] = basePipeline ~> unmarshal[Out]
 
   def execute[T, Response](request: T)(implicit
       er: ElasticRequest[T, Response],
