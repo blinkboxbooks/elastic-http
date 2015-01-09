@@ -52,7 +52,10 @@ class SprayElasticClient(
       er: ElasticRequest[T, Response],
       fru: FromResponseUnmarshaller[Response]): Future[Response] =
     (er.request(request) ~> pipeline[Response]) transform(identity, {
-      case ex: UnsuccessfulResponseException => FailedRequest(ex.response.status, ex.response.entity.asString)
+      case ex: UnsuccessfulResponseException =>
+        UnsuccessfulResponse(ex.response.status, ex.response.entity.asString)
+      case ex =>
+        RequestException(ex.getMessage, ex)
     })
 }
 
