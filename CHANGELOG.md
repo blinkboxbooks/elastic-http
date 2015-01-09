@@ -1,5 +1,14 @@
 # Change log
 
+## 0.0.10 ([#12](https://git.mobcastdev.com/Labs/elastic-http/pull/12) 2015-01-09 15:57:33)
+
+Make a distinction between different types of ES request failures
+
+Patch
+
+- create two different types of exceptions: for when it's an expected failure, and when there is an internal/connection exception (i.e. ConnectionAttemptFailedException)
+
+
 ## 0.0.9 ([#11](https://git.mobcastdev.com/Labs/elastic-http/pull/11) 2015-01-09 12:03:12)
 
 Remove the JsonSupport and publish individual formats
