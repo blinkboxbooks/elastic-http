@@ -6,7 +6,7 @@ import org.json4s.Serializer
 import spray.httpx.Json4sJacksonSupport
 import spray.http.{StatusCode, StatusCodes}
 
-trait Serializers {
+object Formats {
   object BulkResponseItemFormat extends Serializer[BulkResponseItem] {
     def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), BulkResponseItem] = {
       case (t, JObject(JField("update", v) :: Nil)) if t.clazz == classOf[BulkResponseItem] =>
@@ -31,8 +31,10 @@ trait Serializers {
       case x: StatusCode => JInt(x.intValue)
     }
   }
+
+  val all = BulkResponseItemFormat :: StatusCodeFormat :: Nil
 }
 
-object JsonSupport extends Json4sJacksonSupport with Serializers {
-  implicit val json4sJacksonFormats = DefaultFormats + BulkResponseItemFormat + StatusCodeFormat
+private[client] object JsonSupport extends Json4sJacksonSupport {
+  implicit val json4sJacksonFormats = DefaultFormats ++ Formats.all
 }
