@@ -1,5 +1,13 @@
 # Change log
 
+## 0.0.8 ([#10](https://git.mobcastdev.com/Labs/elastic-http/pull/10) 2015-01-09 11:19:33)
+
+Introduce logging capabilities for HTTP request/response
+
+### Improvements
+
+This patch allows passing two functions to the `SprayElasticClient` in order to log what is being sent to and what is being received from ES.
+
 ## 0.0.7 ([#9](https://git.mobcastdev.com/Labs/elastic-http/pull/9) 2015-01-08 14:09:54)
 
 PT-571 Introduce (typed) suggestions support for search
