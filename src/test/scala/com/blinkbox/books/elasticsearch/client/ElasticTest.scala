@@ -45,7 +45,7 @@ trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll wi
   }
 
   def failingRequest[Req](req: Req)(implicit esr: ElasticRequest[Req, _]) = {
-    failingWith[FailedRequest](client.execute(req))
+    failingWith[UnsuccessfulResponse](client.execute(req))
   }
 
 }
