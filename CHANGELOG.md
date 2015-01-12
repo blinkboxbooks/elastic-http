@@ -1,5 +1,13 @@
 # Change log
 
+## 0.0.11 ([#13](https://git.mobcastdev.com/Labs/elastic-http/pull/13) 2015-01-12 11:51:38)
+
+Bumped elastic4s version
+
+### Improvement
+
+- Bumped elastic4s version
+
 ## 0.0.10 ([#12](https://git.mobcastdev.com/Labs/elastic-http/pull/12) 2015-01-09 15:57:33)
 
 Make a distinction between different types of ES request failures
