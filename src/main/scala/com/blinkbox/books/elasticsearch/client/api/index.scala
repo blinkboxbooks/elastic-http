@@ -1,8 +1,7 @@
 package com.blinkbox.books.elasticsearch.client.api
 
 import com.blinkbox.books.elasticsearch.client._
-import com.sksamuel.elastic4s.{DeleteIndexDefinition, IndexDefinition}
-import com.sksamuel.elastic4s.ElasticDsl.CreateIndexDefinition
+import com.sksamuel.elastic4s.{CreateIndexDefinition, DeleteIndexDefinition}
 import spray.client.pipelining._
 import spray.http.{HttpEntity, HttpRequest, MediaRanges}
 import spray.httpx.PipelineException

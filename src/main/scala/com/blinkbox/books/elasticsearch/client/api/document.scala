@@ -1,14 +1,11 @@
 package com.blinkbox.books.elasticsearch.client.api
 
 import com.blinkbox.books.elasticsearch.client._
-import com.sksamuel.elastic4s.{BulkDefinition, DeleteIndexDefinition, GetDefinition, IndexDefinition}
-import com.sksamuel.elastic4s.ElasticDsl.{DeleteByIdDefinition, UpdateDefinition}
-import org.elasticsearch.action.bulk.BulkRequest
+import com.sksamuel.elastic4s._
 import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.update.UpdateRequest
-import org.elasticsearch.index.VersionType
 import org.json4s.{Extraction, Formats, JValue}
 import spray.client.pipelining._
 import spray.http.{HttpRequest, Uri}
@@ -97,7 +94,8 @@ object UpdateSupport {
   def requestBody(req: UpdateRequest)(implicit formats: Formats) = {
     import org.json4s.JsonDSL._
     import org.json4s.jackson.JsonMethods._
-    import scala.collection.convert.WrapAsScala._
+
+import scala.collection.convert.WrapAsScala._
 
     ("script" -> Option(req.script)) ~
       ("scripted_upsert" -> req.scriptedUpsert) ~

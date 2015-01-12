@@ -1,16 +1,14 @@
 package com.blinkbox.books.elasticsearch.client
 
 import akka.actor.ActorRefFactory
-import scala.concurrent.{ExecutionContext, Future}
+import com.blinkbox.books.elasticsearch.client.api._
 import spray.client.pipelining._
-import spray.http.HttpResponse
-import spray.http.{HttpCredentials, HttpRequest}
-import spray.http.HttpHeaders
 import spray.http.HttpHeaders.Host
+import spray.http.{HttpCredentials, HttpRequest, HttpResponse}
 import spray.httpx.UnsuccessfulResponseException
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
-import api._
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ElasticRequest[T, Response] {
   def request(req: T): HttpRequest
