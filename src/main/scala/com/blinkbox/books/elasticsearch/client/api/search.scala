@@ -1,8 +1,7 @@
 package com.blinkbox.books.elasticsearch.client.api
 
 import com.blinkbox.books.elasticsearch.client._
-import com.sksamuel.elastic4s.{DeleteIndexDefinition, IndexDefinition}
-import com.sksamuel.elastic4s.ElasticDsl.SearchDefinition
+import com.sksamuel.elastic4s.SearchDefinition
 import org.elasticsearch.action.search.SearchRequest
 import org.json4s.JValue
 import spray.client.pipelining._

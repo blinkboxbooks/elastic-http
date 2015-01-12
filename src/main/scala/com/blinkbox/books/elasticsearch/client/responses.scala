@@ -1,6 +1,6 @@
 package com.blinkbox.books.elasticsearch.client
 
-import spray.http.{StatusCodes, StatusCode}
+import spray.http.StatusCode
 
 case class GetResponse[T](
   found: Boolean,
