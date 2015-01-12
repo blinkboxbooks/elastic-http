@@ -11,6 +11,8 @@ case class GetResponse[T](
   _source: Option[T]
 )
 
+case class MultiGetResponse[T](docs: Seq[GetResponse[T]])
+
 case class ShardsStats(total: Int, successful: Int, failed: Int)
 case class SearchHit[T](_index: String, _type: String, _id: String, _source: T)
 case class SearchHits[T](total: Int, hits: Seq[SearchHit[T]])

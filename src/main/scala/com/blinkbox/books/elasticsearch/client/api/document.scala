@@ -1,14 +1,14 @@
 package com.blinkbox.books.elasticsearch.client.api
 
 import com.blinkbox.books.elasticsearch.client._
-import com.sksamuel.elastic4s._
+import com.sksamuel.elastic4s.{ BulkDefinition, DeleteByIdDefinition, DeleteIndexDefinition, GetDefinition, IndexDefinition, MultiGetDefinition, UpdateDefinition }
 import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.update.UpdateRequest
-import org.json4s.{Extraction, Formats, JValue}
+import org.json4s.{ Extraction, Formats, JValue }
 import spray.client.pipelining._
-import spray.http.{HttpRequest, Uri}
+import spray.http.{ HttpRequest, Uri }
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
 trait GetSupport {
@@ -95,7 +95,7 @@ object UpdateSupport {
     import org.json4s.JsonDSL._
     import org.json4s.jackson.JsonMethods._
 
-import scala.collection.convert.WrapAsScala._
+    import scala.collection.convert.WrapAsScala._
 
     ("script" -> Option(req.script)) ~
       ("scripted_upsert" -> req.scriptedUpsert) ~
@@ -153,4 +153,52 @@ trait BulkSupport {
 
   implicit def bulkElasticRequestInstance(implicit formats: Formats): ElasticRequest[BulkDefinition, BulkResponse] =
     new BulkElasticRequest
+}
+
+trait MultiGetSupport {
+
+  trait MultiGetBase {
+    implicit def formats: Formats
+
+    import scala.collection.convert.WrapAsScala._
+    import org.json4s.jackson.Serialization
+
+    def requestFor(req: MultiGetDefinition): HttpRequest = {
+      val reqData = MultiGetRequest(req.build.getItems.map { item =>
+        val source = Option(item.fetchSourceContext).map { sourceCtx =>
+          if (sourceCtx.fetchSource()) IncludeExcludeParameter(sourceCtx.includes(), sourceCtx.excludes()) else NotIncludedParameter
+        }
+
+        MultiGetRequestDoc(item.index, item.`type`, item.id, item.fields, item.routing, source)
+      })
+
+      Post("/_mget", Serialization.write(reqData))
+    }
+  }
+
+  class MultiGetElasticRequest(implicit val formats: Formats)
+      extends ElasticRequest[MultiGetDefinition, MultiGetResponse[JValue]]
+      with MultiGetBase {
+    override def request(req: MultiGetDefinition): HttpRequest = requestFor(req)
+  }
+
+  implicit def mutliGetElasticRequestInstance(implicit formats: Formats): ElasticRequest[MultiGetDefinition, MultiGetResponse[JValue]] = new MultiGetElasticRequest
+}
+
+trait TypedMultiGetSupport {
+  this: MultiGetSupport =>
+
+  case class TypedMultiGetDefinition[T: FromResponseUnmarshaller](multiGet: MultiGetDefinition)
+
+  implicit class MultiGetDefinitionOps(multiGet: MultiGetDefinition) {
+    def sourceIs[T: FromResponseUnmarshaller] = TypedMultiGetDefinition[T](multiGet)
+  }
+
+  class TypedMultiGetElasticRequest[T: FromResponseUnmarshaller](implicit val formats: Formats)
+      extends ElasticRequest[TypedMultiGetDefinition[T], MultiGetResponse[T]]
+      with MultiGetBase {
+    override def request(req: TypedMultiGetDefinition[T]): HttpRequest = requestFor(req.multiGet)
+  }
+
+  implicit def typedMultiGetElasticRequestInstance[T: FromResponseUnmarshaller](implicit formats: Formats): ElasticRequest[TypedMultiGetDefinition[T], MultiGetResponse[T]] = new TypedMultiGetElasticRequest[T]
 }

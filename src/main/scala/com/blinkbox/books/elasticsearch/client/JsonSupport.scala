@@ -18,7 +18,7 @@ object Formats {
     }
 
     def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-      case _: BulkResponseItem => sys.error("Serialisation of BulkResponseItem is not supported")
+      case _: BulkResponseItem => throw new UnsupportedOperationException("Serialisation of BulkResponseItem is not supported")
     }
   }
 
@@ -32,7 +32,20 @@ object Formats {
     }
   }
 
-  val all = BulkResponseItemFormat :: StatusCodeFormat :: Nil
+  object SourceParameterFormat extends Serializer[api.SourceParameter] {
+    def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), api.SourceParameter] = {
+      case (t, _) if t.clazz == classOf[api.SourceParameter] => throw new UnsupportedOperationException("De-serialising mult-get source parameters is not supported")
+    }
+    def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+      case api.NotIncludedParameter => JBool(false)
+      case api.IncludeExcludeParameter(includes, excludes) =>
+        JObject(
+          JField("include", JArray(includes.map(JString).toList)),
+          JField("exclude", JArray(excludes.map(JString).toList)))
+    }
+  }
+
+  val all = BulkResponseItemFormat :: StatusCodeFormat :: SourceParameterFormat :: Nil
 }
 
 private[client] object JsonSupport extends Json4sJacksonSupport {
