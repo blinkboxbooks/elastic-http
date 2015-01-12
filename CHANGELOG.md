@@ -1,5 +1,13 @@
 # Change log
 
+## 0.0.12 ([#14](https://git.mobcastdev.com/Labs/elastic-http/pull/14) 2015-01-12 17:10:58)
+
+PT-572 Introduce multi-get API support
+
+### Improvements
+
+Introduce support for [Multi GET APIs](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-multi-get.html)
+
 ## 0.0.11 ([#13](https://git.mobcastdev.com/Labs/elastic-http/pull/13) 2015-01-12 11:51:38)
 
 Bumped elastic4s version
