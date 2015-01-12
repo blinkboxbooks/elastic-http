@@ -71,3 +71,5 @@ object ElasticClientApi
   with RefreshIndicesSupport
   with UpdateSupport
   with BulkSupport
+  with MultiGetSupport
+  with TypedMultiGetSupport

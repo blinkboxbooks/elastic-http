@@ -130,4 +130,37 @@ class DocumentSpecs extends FlatSpec with Matchers with ElasticTest {
       )
     }
   }
+
+  it should "support multi-get requests" in {
+    implicit val formats = JsonSupport.json4sFormats
+
+    val firstId = "0000000000001"
+    val secondId = "0000000000002"
+    val notExistingId = "0000000000003"
+    val firstBook = troutBook.copy(isbn = firstId)
+    val secondBook = troutBook.copy(isbn = secondId)
+
+    successfulRequest(index into "catalogue" -> "book" doc BookJsonSource(firstBook) id firstId) check isOk
+    successfulRequest(index into "catalogue" -> "book" doc BookJsonSource(secondBook) id secondId) check isOk
+
+    successfulRequest(multiget(
+      get id firstId from "catalogue/book",
+      get id secondId from "catalogue/book",
+      get id notExistingId from "catalogue/book"
+    ).sourceIs[Book]) check { res =>
+      res.docs should have size(3)
+
+      res.docs(0)._id should equal(firstId)
+      res.docs(0).found shouldBe true
+      res.docs(0)._source should equal(Some(firstBook))
+
+      res.docs(1)._id should equal(secondId)
+      res.docs(1).found shouldBe true
+      res.docs(1)._source should equal(Some(secondBook))
+
+      res.docs(2)._id should equal(notExistingId)
+      res.docs(2).found shouldBe false
+      res.docs(2)._source should equal(None)
+    }
+  }
 }
