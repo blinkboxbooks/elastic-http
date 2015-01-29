@@ -1,14 +1,16 @@
 package com.blinkbox.books.elasticsearch.client
 
 import akka.actor.ActorSystem
-import com.blinkbox.books.test.FailHelper
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
-import org.scalatest.concurrent.ScalaFutures
+import java.util.concurrent.atomic.AtomicReference
+import org.scalatest.{Assertions, BeforeAndAfterAll, BeforeAndAfterEach, Suite}
+import org.scalatest.concurrent.{AsyncAssertions, PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Span}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 import spray.httpx.Json4sJacksonSupport
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
-trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll with BeforeAndAfterEach {
+trait ElasticTest extends Assertions with AsyncAssertions with ScalaFutures with BeforeAndAfterAll with BeforeAndAfterEach {
   this: Suite =>
 
   override implicit def patienceConfig = PatienceConfig(timeout = Span(30000, Millis), interval = Span(250, Millis))
@@ -36,6 +38,22 @@ trait ElasticTest extends ScalaFutures with FailHelper with BeforeAndAfterAll wi
   def isOk[T] = { _: T => () }
 
   case class SuccessfulRequest[Resp](check: (Resp => Unit) => Unit)
+
+  def failingWith[T <: Throwable : Manifest](f: Future[_])(implicit p: PatienceConfig, ec: ExecutionContext): T = {
+    val at = new AtomicReference[Try[Any]]()
+
+    val w = new Waiter
+    f onComplete { case result =>
+      at.set(result)
+      w.dismiss()
+    }
+    w.await()(p)
+
+    at.get() match {
+      case Success(i) => intercept[T](i)
+      case Failure(e) => intercept[T](throw e)
+    }
+  }
 
   def successfulRequest[Req, Resp](req: Req)(implicit
       esr: ElasticRequest[Req, Resp],
