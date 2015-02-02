@@ -4,9 +4,7 @@ This project is an adapter for the [Elastic4s library](https://github.com/sksamu
 
 ## Rationale
 
-The reason for this project is to explore options that allow us to use ES in the Catalogue v2 and in the Marvin v2 projects. We started our development using [Elastic4s](https://github.com/sksamuel/elastic4s) as it provides a neat DSL for writing queries in a way that is very close to the JSON DSL provided by ES itself. Another Scala library for ES that could be interesting is [Wabisabi](https://github.com/gphat/wabisabi) but it lacks any query abstraction and authentication support.
-
-The official Java API provided by the ES development team and most libraries out there (including the aforementioned Elastic4s) use a binary protocol over TCP to communicate with an ES cluster; in our case we would prefer using the HTTP protocol as it has been asked by our DevOps team for the following reasons:
+The reason why we started this project is to explore options to allow using the HTTP protocol to communicate with an ES cluster from our scala projects. We started our development using [Elastic4s](https://github.com/sksamuel/elastic4s) as it provides a neat DSL for writing queries in a way that is very close to the JSON DSL provided by ES itself. The official Java API provided by the ES development team and most libraries out there (including the aforementioned Elastic4s) use a binary protocol over TCP to communicate with an ES cluster; in our case we would prefer using the HTTP protocol as it has been asked by our DevOps team for the following reasons:
 
 * No [JVM-version dependencies](http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/_java_virtual_machine.html)
 * Easier to set-up authentication: as ES doesn't provide an authentication module at the moment it is easier to provide authentication over HTTP proxies
@@ -15,6 +13,16 @@ The official Java API provided by the ES development team and most libraries out
 ## About this project
 
 This is an attempt to make it easier for us to continue developing our services with the tools we chose and with minimum disruption for the existing code. For examples of usage please go to the [tests folder](https://git.mobcastdev.com/Labs/elastic-http/tree/master/src/test/scala/com/blinkbox/books/elasticsearch/client); tests follow the same categorization used on the ES API guide.
+
+### Installation
+
+The project is available on Maven Central, you can depend on it by adding the following to your `build.sbt`:
+
+```
+libraryDependencies += "com.blinkbox.books" %% "elastic-http" % "0.0.12"
+```
+
+This project requires *Scala >= 2.11.5*.
 
 ### ElasticClient
 
