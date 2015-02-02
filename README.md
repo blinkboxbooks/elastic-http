@@ -1,4 +1,4 @@
-# Elasticsearch HTTP Client
+# Elasticsearch HTTP Client [![Build Status](https://travis-ci.org/blinkboxbooks/elastic-http.svg?branch=master)](https://travis-ci.org/blinkboxbooks/elastic-http)
 
 This project is an adapter for the [Elastic4s library](https://github.com/sksamuel/elastic4s) to communicate with ElasticSearch over HTTP.
 
