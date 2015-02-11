@@ -12,7 +12,7 @@ The reason why we started this project is to explore options to allow using the 
 
 ## About this project
 
-This is an attempt to make it easier for us to continue developing our services with the tools we chose and with minimum disruption for the existing code. For examples of usage please go to the [tests folder](https://git.mobcastdev.com/Labs/elastic-http/tree/master/src/test/scala/com/blinkbox/books/elasticsearch/client); tests follow the same categorization used on the ES API guide.
+This is an attempt to make it easier for us to continue developing our services with the tools we chose and with minimum disruption for the existing code. For examples of usage please go to the [tests folder](https://github.com/blinkboxbooks/elastic-http/tree/master/src/test/scala/com/blinkbox/books/elasticsearch/client); tests follow the same categorization used on the ES API guide.
 
 ### Installation
 
